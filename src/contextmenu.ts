@@ -122,6 +122,10 @@ class ContextMenu {
 		}
 	}
 
+	/**
+	 * Opens the children list of an item.
+	 * @param {Event} e The click event.
+	 */
 	private _openChildren(e : Event): void {
 		const target = e.target as HTMLElement;
 		const li = target.parentElement;
