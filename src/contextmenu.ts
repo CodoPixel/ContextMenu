@@ -12,6 +12,8 @@ interface ContextTemplate {
  * @class
  */
 class ContextMenu {
+	private arrow_down: string = "▼";
+	private arrow_up: string = "▲";
 	private menu: HTMLElement | null = null;
 	private menuid: string | null = null;
 	private builder: HTMLBuilder;
@@ -121,10 +123,15 @@ class ContextMenu {
 	}
 
 	private _openChildren(e : Event): void {
-		const target = e.target as HTMLLIElement; // will always be the <li>
-		const children_container = target.querySelector(".contextmenu-container-children");
-		if (children_container) {
-			children_container.classList.toggle("contextmenu-hidden");
+		const target = e.target as HTMLElement;
+		const li = target.parentElement;
+		if (li) {
+			const children_container = li.querySelector(".contextmenu-container-children");
+			const arrow = li.querySelector(".contextmenu-arrow");
+			if (children_container && arrow) {
+				children_container.classList.toggle("contextmenu-hidden");
+				arrow.textContent == this.arrow_up ? arrow.textContent = this.arrow_down : arrow.textContent = this.arrow_up;
+			}
 		}
 	}
 
@@ -162,15 +169,19 @@ class ContextMenu {
 
 		if (children) {
 			let complex_template = `
-                li.contextmenu-has-children${"@" + event_name}
-                    >div.contextmenu-container-title
-                        ${icon ? ">>img[src=" + icon + "]" : ""}
-                        >>span.contextmenu-title(${title})
+                li${"@" + event_name}
+                    >div.contextmenu-item
+						>>div.contextmenu-container-title
+							${icon ? ">>>img[src=" + icon + "]" : ""}
+							>>>span.contextmenu-title(${title})
+						>>span.contextmenu-arrow(${this.arrow_down})
 					>div.contextmenu-container-children.contextmenu-hidden
 						>>ul
             `;
 
 			for (var child of children) {
+				child.children = undefined; // the user cannot have children again
+
 				if (child.separator) {
 					complex_template += this.builder.indentTemplate("div.contextmenu-separator", 3) + "\n";
 				} else {
@@ -182,10 +193,11 @@ class ContextMenu {
 		} else {
 			return `
                 li${"@" + event_name}
-                    >div.contextmenu-container-title
-						${icon ? ">>img[src=" + icon + "]" : ""}
-						>>span.contextmenu-title(${title})
-                    ${shortcut ? ">span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
+                    >div.contextmenu-item
+						>>div.contextmenu-container-title
+							${icon ? ">>>img[src=" + icon + "]" : ""}
+							>>>span.contextmenu-title(${title})
+						${shortcut ? ">>span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
             `;
 		}
 	}

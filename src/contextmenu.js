@@ -10,6 +10,8 @@ class ContextMenu {
      * @param items The items to be displayed.
      */
     constructor(event, items) {
+        this.arrow_down = "▼";
+        this.arrow_up = "▲";
         this.menu = null;
         this.menuid = null;
         event.stopPropagation();
@@ -102,10 +104,15 @@ class ContextMenu {
         }
     }
     _openChildren(e) {
-        const target = e.target; // will always be the <li>
-        const children_container = target.querySelector(".contextmenu-container-children");
-        if (children_container) {
-            children_container.classList.toggle("contextmenu-hidden");
+        const target = e.target;
+        const li = target.parentElement;
+        if (li) {
+            const children_container = li.querySelector(".contextmenu-container-children");
+            const arrow = li.querySelector(".contextmenu-arrow");
+            if (children_container && arrow) {
+                children_container.classList.toggle("contextmenu-hidden");
+                arrow.textContent == this.arrow_up ? arrow.textContent = this.arrow_down : arrow.textContent = this.arrow_up;
+            }
         }
     }
     /**
@@ -141,14 +148,17 @@ class ContextMenu {
         }
         if (children) {
             let complex_template = `
-                li.contextmenu-has-children${"@" + event_name}
-                    >div.contextmenu-container-title
-                        ${icon ? ">>img[src=" + icon + "]" : ""}
-                        >>span.contextmenu-title(${title})
+                li${"@" + event_name}
+                    >div.contextmenu-item
+						>>div.contextmenu-container-title
+							${icon ? ">>>img[src=" + icon + "]" : ""}
+							>>>span.contextmenu-title(${title})
+						>>span.contextmenu-arrow(${this.arrow_down})
 					>div.contextmenu-container-children.contextmenu-hidden
 						>>ul
             `;
             for (var child of children) {
+                child.children = undefined; // the user cannot have children again
                 if (child.separator) {
                     complex_template += this.builder.indentTemplate("div.contextmenu-separator", 3) + "\n";
                 }
@@ -161,10 +171,11 @@ class ContextMenu {
         else {
             return `
                 li${"@" + event_name}
-                    >div.contextmenu-container-title
-						${icon ? ">>img[src=" + icon + "]" : ""}
-						>>span.contextmenu-title(${title})
-                    ${shortcut ? ">span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
+                    >div.contextmenu-item
+						>>div.contextmenu-container-title
+							${icon ? ">>>img[src=" + icon + "]" : ""}
+							>>>span.contextmenu-title(${title})
+						${shortcut ? ">>span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
             `;
         }
     }

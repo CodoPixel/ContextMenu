@@ -1,33 +1,66 @@
+/* variables */
+
+:root {
+	--menu-background-color: #fff;
+	--menu-box-shadow: 0 0 6px rgba(204, 204, 204, 0.25);
+	--menu-width: 180px;
+	--menu-font-family: Roboto, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
+	--menu-font-color: #404040;
+	--menu-font-size: 0.9em;
+	--menu-hover-item-color: #b4e6ff;
+	--menu-hover-child-color: #8ed7fc;
+	--menu-shortcut-color: rgba(64, 64, 64, 0.5);
+	--menu-separator-color: #eee;
+	--menu-icon-width: 10px;
+	--menu-separator-height: 1px;
+}
+
+/*
+*
+* General styles, necessary for the proper functioning of the menu
+*
+*/
+
+/* the context menu */
 .contextmenu {
 	position: absolute;
-	background-color: #fff;
-	box-shadow: 0 0 6px rgba(204, 204, 204, 0.25);
+	background-color: var(--menu-background-color, #fff);
+	box-shadow: var(--menu-box-shadow, 0 0 6px rgba(204, 204, 204, 0.25));
 	border-radius: 5px;
 	box-sizing: border-box;
 	margin: 0;
 	padding: 10px 0;
 	display: block;
-	width: 180px;
+	width: var(--menu-width, 180px);
 	height: auto;
 	overflow: hidden;
 }
 
+/* everything inside the context menu will have the same font family & color */
 .contextmenu * {
-	font-family: Roboto, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
-	color: #404040;
+	font-family: var(--menu-font-family, Roboto, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif);
+	color: var(--menu-font-color, #404040);
 }
 
+/* when we click on the item, we don't want the target to be one of these: */
 .contextmenu .contextmenu-container-title,
-.contextmenu .contextmenu-shortcut {
+.contextmenu .contextmenu-shortcut,
+.contextmenu .contextmenu-arrow {
 	pointer-events: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
+/* border-box is life :) */
 .contextmenu ul,
 .contextmenu li,
 .contextmenu div {
 	box-sizing: border-box;
 }
 
+/* the li must be centered and with no original styles */
 .contextmenu ul {
 	list-style-type: none;
 	padding: 0;
@@ -38,20 +71,14 @@
 	align-items: center;
 }
 
-.contextmenu ul li.contextmenu-has-children {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: flex-start;
-}
-
-.contextmenu ul li,
+/* the title, which includes the icon & the title of the item */
 .contextmenu ul li .contextmenu-container-title {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 }
 
+/* if the title is too long, we make it shorter */
 .contextmenu ul li .contextmenu-title {
 	width: 90px;
 	text-overflow: ellipsis;
@@ -59,37 +86,55 @@
 	overflow: hidden;
 }
 
+/* the li contains tow divs, the first one includes the icon, the title & the shortcut, the second one includes the children */
 .contextmenu ul li {
-	display: flex;
+	display:flex;
+	flex-direction: column;
 	width: 100%;
-	padding: 5px 10px;
-	font-size: 0.9em;
+	font-size: var(--menu-font-size, 0.9em);
 	cursor: default;
 }
 
-.contextmenu ul li:hover {
-	background-color: #b4e6ff;
+/* .contextmenu-item contains the icon, the title & the shortcut (or arrow) */
+.contextmenu ul li .contextmenu-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 5px 10px;
 }
 
-.contextmenu ul li .contextmenu-shortcut {
+/* nice bluish color when we hover an item, actually it is not the element itself, but rather its content */
+.contextmenu ul li .contextmenu-item:hover {
+	background-color: var(--menu-hover-item-color, #b4e6ff);
+}
+
+/* we want a different color when it comes to the children we are hovering over, a more darken one,
+to improve differentiation and readability for the user */
+.contextmenu .contextmenu-container-children ul li .contextmenu-item:hover {
+	background-color: var(--menu-hover-child-color, #8ed7fc);
+}
+
+.contextmenu ul li .contextmenu-shortcut,
+.contextmenu ul li .contextmenu-arrow {
 	font-size: 0.8em;
-	color: rgba(64, 64, 64, 0.5);
+	color: var(--menu-shortcut-color, rgba(64, 64, 64, 0.5));
+	text-align: right;
 }
 
 .contextmenu .contextmenu-separator {
 	width: 90%;
-	height: 1px;
+	height: var(--menu-separator-height, 1px);
 	margin: 5px 0;
-	background-color: #eee;
+	background-color: var(--menu-separator-color, #eee);
 }
 
 .contextmenu img {
-	width: 10px;
+	width: var(--menu-icon-width, 10px);
 	height: auto;
 	opacity: 0.5;
 	margin-right: 10px;
 }
 
+/* the container of the children */
 .contextmenu-hidden {
 	visibility: hidden;
 	max-height: 0px;
