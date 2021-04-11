@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo for ContextMenu.js</title>
+
+    <link rel="stylesheet" href="contextmenu.css">
+
+    <style>
+        /*
+        *
+        * Useless styles, just for the demo
+        *
+        */
+
+        body,
+        header,
+        main,
+        nav,
+        main {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        header {
+            height: 15vh;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            margin: 0;
+        }
+
+        header h1 {
+            letter-spacing: 1.1px;
+            text-transform: uppercase;
+        }
+
+        header h2 {
+            font-weight: 300;
+            font-size: 16px;
+        }
+
+        header nav ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        header nav ul a {
+            color: #404040;
+            text-decoration: none;
+            font-weight: 300;
+            font-size: 16px;
+            letter-spacing: 1.1px;
+            transition: color 200ms ease;
+        }
+
+        header nav ul li {
+            margin-right: 15px;
+        }
+
+        header nav ul li:last-child {
+            margin-right: 0px;
+        }
+
+        header nav ul a:hover,
+        header nav ul a.active {
+            color: #96d2d1;
+        }
+
+        main {
+            background-color: #f7f7f7;
+            padding: 50px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        main h1 {
+            font-size: 50px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 40px;
+        }
+
+        main h2 {
+            font-weight: 300;
+            font-size: 26px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        main button {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            color: #fff;
+            background-color: rgb(150, 210, 209);
+            height: 50px;
+            width: 150px;
+            font-size: 15px;
+            box-shadow: none;
+            border-style: solid;
+            border-color: rgb(150, 210, 209);
+            border-width: 0 1px 4px 1px;
+            border-radius: 0.25rem;
+            transition: box-shadow 200ms ease;
+        }
+
+        main button:focus {
+            box-shadow: 0 0 0 0.2rem rgba(150, 210, 209, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1>ContextMenu.js</h1>
+            <h2>Create your own context menu now!</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a class="active" href="">Demo</a></li>
+                <li><a href="https://github.com/CodoPixel/ContextMenu">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>A Pure Javascript Library</h2>
+        <h1>Context Menu example:</h1>
+        <button type="button" id="btn">Right click here</button>
+    </main>
+
+    <script src="./contextmenu.js"></script>
+    <script>
+        /*
+         *
+         * All the icons from this demo come from fontawesome.com
+         *
+         */
+
+        const button = document.querySelector("#btn");
+        button.addEventListener('contextmenu', function (e) {
+            e.preventDefault(); // this avoids the default behavior of the browser
+            let contextMenu = new ContextMenu(e, [
+                { title: 'Accept', shortcut: 'Ctrl+C', icon: 'assets/check-icon.svg', onclick: () => console.log("accepted") },
+                { title: 'Deny', icon: 'assets/bomb-icon.svg', onclick: () => console.log("denied") },
+                { title: 'More', icon: 'assets/more-icon.svg',
+                    children: [
+                        { title: 'No idea', onclick: () => console.log("clicked on an item which has no idea") },
+                        { title: 'Still no idea', onclick: () => console.log("just for the example :)") }
+                    ]
+                },
+                { separator: true },
+                { title: 'Cancel', icon: 'assets/power-off-icon.svg', onclick: () => console.log("cancelled") }
+            ]);
+        });
+    </script>
+</body>
+</html>
