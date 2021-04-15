@@ -43,6 +43,7 @@ var item = {
     title: "Item 1",
     shortcut: "Ctrl+C",
     icon: "assets/myicon.svg",
+    // or: fontawesome_icon: "fas fa-check", (the className of an icon)
     onclick: () => console.log("clicked on item 1"),
 };
 ```

@@ -2,9 +2,18 @@ interface ContextTemplate {
 	title?: string;
 	shortcut?: string;
 	icon?: string;
+	fontawesome_icon?:string;
 	onclick?: () => void;
 	separator?: boolean;
 	children?: ContextTemplate[];
+}
+
+interface ContextElement {
+    id?: string;
+    className?: string;
+    textContent?: string;
+    attributes?: [string, string][];
+    styles?: [string, string][];
 }
 
 /**
@@ -16,17 +25,15 @@ class ContextMenu {
 	private arrow_up: string = "▲";
 	private menu: HTMLElement | null = null;
 	private menuid: string | null = null;
-	private builder: HTMLBuilder;
 
 	/**
 	 * @constructs ContextMenu
-	 * @param event The mouse event.
-	 * @param items The items to be displayed.
+	 * @param {MouseEvent} event The mouse event.
+	 * @param {Array<{title?:string,shortcut?:string,icon?:string,onclick?:Function,separator?:boolean,children?:Array}>} items The items to be displayed.
 	 */
 	public constructor(event: MouseEvent, items: ContextTemplate[]) {
 		event.stopPropagation();
 		this._closeAllMenus();
-		this.builder = new HTMLBuilder();
 		this._build(event, items);
 
 		document.onclick = (e: MouseEvent) => {
@@ -41,6 +48,7 @@ class ContextMenu {
 	/**
 	 * Gets the current menu if it's built.
 	 * @returns {HTMLElement|null} The menu.
+	 * @private
 	 */
 	private _getMenu(): HTMLElement | null {
 		if (this.menuid) {
@@ -52,6 +60,7 @@ class ContextMenu {
 
 	/**
 	 * Closes the current menu if it's opened.
+	 * @public
 	 */
 	public closeCurrentMenu(): void {
 		const menu = this._getMenu();
@@ -62,6 +71,7 @@ class ContextMenu {
 
 	/**
 	 * Closes all the menus that could be opened.
+	 * @private
 	 */
 	private _closeAllMenus(): void {
 		const allmenus = document.querySelectorAll(".contextmenu");
@@ -77,6 +87,7 @@ class ContextMenu {
 	 * @param {number} min The minimum number (included)
 	 * @param {number} max The maximum number (not included)
 	 * @returns {number} The random number [min;max[
+	 * @private
 	 */
 	private _rand(min: number, max: number): number {
 		min = Math.ceil(min);
@@ -84,31 +95,70 @@ class ContextMenu {
 		return Math.floor(Math.random() * (max - min)) + min;
 	}
 
+    /**
+     * Creates a customizable div element.
+     * @param {string} tagName The name of the tag.
+     * @param {{id?:string,className?:string,textContent?:string,attributes?:Array<string>,styles?:Array<string>}} options The options to customize the element.
+     * @returns {HTMLElement} The created element.
+     * @private
+     */
+    private _createEl(tagName: string, options?: ContextElement): HTMLElement {
+        const el = document.createElement(tagName);
+        if (!options) return el;
+
+        if (options.id) el.setAttribute("id", options.id);
+        if (options.textContent) el.textContent = options.textContent;
+        if (options.className) {
+            const classes = options.className.split(" ");
+            for (let clas of classes) {
+                el.classList.add(clas);
+            }
+        }
+
+        if (options.styles) {
+            for (let style of options.styles) {
+                const property = style[0];
+                const value = style[1];
+                el.style[property as any] = value;
+            }
+        }
+
+        if (options.attributes) {
+            for (let attr of options.attributes) {
+                const name = attr[0];
+                const value = attr[1];
+                el.setAttribute(name, value);
+            }
+        }
+
+        return el;
+    }
+
 	/**
 	 * Builds the menu.
 	 * @param {MouseEvent} event The mouse event.
 	 * @param {{title:string|undefined,shortcut:string|undefined,icon:string|undefined,onclick:Function|undefined,separator:boolean|undefined,children:array|undefined}} items The items to be displayed.
+	 * @private
 	 */
 	private _build(event: MouseEvent, items: ContextTemplate[]): void {
-		const id = "contextmenu-" + this._rand(0, 1000000);
-		let template = `
-            div.contextmenu#${id}
-                >ul
-        `;
+		this.menuid = "contextmenu-" + this._rand(0, 1000000);
+		let contextmenu = this._createEl("div", { className: "contextmenu", id: this.menuid });
+		let list = this._createEl("ul");
 
 		for (let item of items) {
 			if (item.separator) {
-				template += this.builder.indentTemplate("div.contextmenu-separator", 2) + "\n";
+				const sep = this._createEl("div", { className: "contextmenu-separator" });
+				list.appendChild(sep);
 			} else {
-				template += this.builder.indentTemplate(this._buildItem(item), 2) + "\n";
+				const li = this._buildItem(item);
+				list.appendChild(li);
 			}
 		}
 
-		this.builder.generate(template);
-		this.builder.clearEvents();
-		this.menuid = id;
-		this.menu = document.querySelector("#" + id);
+		contextmenu.appendChild(list);
+		document.body.appendChild(contextmenu);
 
+		this.menu = document.querySelector("#" + this.menuid);
 		if (this.menu) {
 			this.menu.style.left =
 				event.clientX + this.menu.offsetWidth >= window.innerWidth
@@ -125,6 +175,7 @@ class ContextMenu {
 	/**
 	 * Opens the children list of an item.
 	 * @param {Event} e The click event.
+	 * @private
 	 */
 	private _openChildren(e : Event): void {
 		const target = e.target as HTMLElement;
@@ -142,472 +193,98 @@ class ContextMenu {
 	/**
 	 * Builds an item.
 	 * @param {{title:string|undefined,shortcut:string|undefined,icon:string|undefined,onclick:Function|undefined,separator:boolean|undefined,children:array|undefined}} item An item to be displayed in the menu.
-	 * @returns The template of an item.
+	 * @returns {HTMLLIElement} The template of an item.
+	 * @private
 	 */
-	private _buildItem(item: ContextTemplate): string {
+	private _buildItem(item: ContextTemplate): HTMLLIElement {
 		const icon = item.icon ? item.icon : null;
+		const fontawesome_icon = item.fontawesome_icon ? item.fontawesome_icon : null;
 		const title = item.title ? item.title : "";
 		const shortcut = item.shortcut ? item.shortcut : null;
 		const onclick = item.onclick ? item.onclick : null;
 		const children = item.children ? item.children : null;
 
-		let event_name = "";
+		const li = this._createEl("li") as HTMLLIElement;
+
 		if (!children && onclick) {
-			event_name = "eventitem-" + this._rand(0, 1000000);
-			this.builder.bindEvent({
-				name: event_name,
-				type: "click",
-				callback: () => {
-					onclick();
-					this.closeCurrentMenu();
-				},
+			li.addEventListener("click", () => {
+				onclick();
+				this.closeCurrentMenu();
 			});
 		} else if (children) {
-			event_name = "openchildren-" + this._rand(0, 1000000);
-			this.builder.bindEvent({
-				name: event_name,
-				type: "click",
-				callback: (e) => { this._openChildren(e) }
+			li.addEventListener("click", (e: MouseEvent) => {
+				this._openChildren(e);
 			});
 		}
 
 		if (children) {
-			let complex_template = `
-                li${"@" + event_name}
-                    >div.contextmenu-item
-						>>div.contextmenu-container-title
-							${icon ? ">>>img[src=" + icon + "]" : ""}
-							>>>span.contextmenu-title(${title})
-						>>span.contextmenu-arrow(${this.arrow_down})
-					>div.contextmenu-container-children.contextmenu-hidden
-						>>ul
-            `;
+			const el_contextmenuitem = this._createEl("div", { className: "contextmenu-item" });
+			const el_containertitle = this._createEl("div", { className: "contextmenu-container-title" });
+			const el_icon = icon ? this._createEl("img", { attributes: [["src", icon]] }) : null;
+			const el_fontawesome_icon = fontawesome_icon ? this._createEl("i", { className: fontawesome_icon }) : null;
+			const el_title = this._createEl("span", { className: "contextmenu-title", textContent: title });
+			const el_arrow = this._createEl("span", { className: "contextmenu-arrow", textContent: this.arrow_down });
+			const el_containerchildren = this._createEl("div", { className: "contextmenu-container-children contextmenu-hidden" });
+			const el_ul = this._createEl("ul");
 
 			for (var child of children) {
-				child.children = undefined; // the user cannot have children again
+				child.children = undefined;
 
-				if (child.separator) {
-					complex_template += this.builder.indentTemplate("div.contextmenu-separator", 3) + "\n";
+ 				if (child.separator) {
+					const sep = this._createEl("div", { className: "contextmenu-separator" });
+					el_ul.appendChild(sep);
 				} else {
-					complex_template += this.builder.indentTemplate(this._buildItem(child), 3) + "\n";
+					const li = this._buildItem(child);
+					el_ul.appendChild(li);
 				}
 			}
 
-			return complex_template;
+			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
+			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
+			el_containertitle.appendChild(el_title);
+			el_contextmenuitem.appendChild(el_containertitle);
+			el_contextmenuitem.appendChild(el_arrow);
+			li.appendChild(el_contextmenuitem);
+			el_containerchildren.appendChild(el_ul);
+			li.appendChild(el_containerchildren);
+
+			/*
+			li
+				>div.contextmenu-item
+					>>div.contextmenu-container-title
+						${icon ? ">>>img[src=" + icon + "]" : ""}
+						>>>span.contextmenu-title(${title})
+					>>span.contextmenu-arrow(${this.arrow_down})
+				>div.contextmenu-container-children.contextmenu-hidden
+					>>ul
+			*/
+
+			return li;
 		} else {
-			return `
-                li${"@" + event_name}
-                    >div.contextmenu-item
-						>>div.contextmenu-container-title
-							${icon ? ">>>img[src=" + icon + "]" : ""}
-							>>>span.contextmenu-title(${title})
-						${shortcut ? ">>span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
-            `;
-		}
-	}
-}
+			const el_contextmenuitem = this._createEl("div", { className: "contextmenu-item" });
+			const el_containertitle = this._createEl("div", { className: "contextmenu-container-title" });
+			const el_icon = icon ? this._createEl("img", { attributes: [["src", icon]] }) : null;
+			const el_fontawesome_icon = fontawesome_icon ? this._createEl("i", { className: fontawesome_icon }) : null;
+			const el_title = this._createEl("span", { className: "contextmenu-title", textContent: title });
+			const el_shortcut = shortcut ? this._createEl("span", { className: "contextmenu-shortcut", textContent: shortcut }) : null;
+			
+			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
+			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
+			el_containertitle.appendChild(el_title);
+			el_contextmenuitem.appendChild(el_containertitle);
+			if (el_shortcut) el_contextmenuitem.appendChild(el_shortcut);
+			li.appendChild(el_contextmenuitem);
 
-/*
- *
- * --------
- * Dependency: HTMLBuilder v1.0.6
- * --------
- *
- */
+			/*
+			li${"@" + event_name}
+				>div.contextmenu-item
+					>>div.contextmenu-container-title
+						${icon ? ">>>img[src=" + icon + "]" : ""}
+						>>>span.contextmenu-title(${title})
+					${shortcut ? ">>span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
+			*/
 
-// FRENCH="àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ"
-
-interface Listener {
-	name: string;
-	type: string;
-	callback: (e: any) => void;
-	options?: any;
-}
-
-/**
- * A tool that allows you to generate HTML content from a template in an optimised way.
- * @class
- */
-class HTMLBuilder {
-	/**
-	 * The regular expression used to parse a template.
-	 * @type {RegExp}
-	 * @constant
-	 * @private
-	 */
-	private REGEX: RegExp = /(\w+)((?:\.[\w-]*)*)*(#[\w-]*)?(?:\((.*)\))?(?:\[(.*)\])?(?:\@([\w;-]*))*/;
-
-	/**
-	 * The parent element in which to put the generated elements from the template.
-	 * @type {HTMLElement}
-	 * @private
-	 */
-	private parent: HTMLElement;
-
-	/**
-	 * The symbol uses to separate different attributes.
-	 * @type {string}
-	 * @private
-	 */
-	private SYMBOL_BETWEEN_ATTRIBUTES: string = ";";
-
-	/**
-	 * The list of all the events.
-	 * @private
-	 */
-	private EVENTS: Listener[] = [];
-
-	/**
-	 * @constructs HTMLBuilder
-	 * @param {HTMLElement} parent The parent in which to put the generated elements.
-	 */
-	public constructor(parent?: HTMLElement) {
-		this.parent = parent || document.body;
-	}
-
-	/**
-	 * Changes the parent element.
-	 *
-	 * @param parent The new parent element in which to put the generated elements.
-	 * @public
-	 */
-	public setParent(parent: HTMLElement): void {
-		this.parent = parent;
-	}
-
-	/**
-	 * Registers an event to use in a template. Those events are available for all the templates.
-	 *
-	 * @param {{name: string, type: string, callback: Function, options: any}} event The event to register.
-	 * @public
-	 */
-	public bindEvent(event: Listener): void {
-		if (!event.name) throw new Error("bindEvent(): cannot bind an event without a name.");
-		if (!event.type) throw new Error("bindEvent(): cannot bind an event without a precise type.");
-		if (!event.callback) throw new Error("bindEvent(): cannot bind an event without a callback function.");
-		if (event.name.startsWith("on")) {
-			event.name = event.name.replace("on", "");
-		}
-		this.EVENTS.push(event);
-	}
-
-	/**
-	 * Clears all the events.
-	 * @public
-	 * @since 1.0.6
-	 */
-	public clearEvents(): void {
-		this.EVENTS = [];
-	}
-
-	/**
-	 * Changes the symbol that separates the attributes inside brackets.
-	 *
-	 * @param {string} symbol The new symbol.
-	 * @public
-	 * @example `
-	 *      changeSymbolBetweenAttributes('/')
-	 *      => [attr1=et / attr2=voilà]
-	 * `
-	 */
-	public changeSymbolBetweenAttributes(symbol: string): void {
-		this.SYMBOL_BETWEEN_ATTRIBUTES = symbol;
-	}
-
-	/**
-	 * Indents a template in order to concatenate it with another one.
-	 * @param {string} template The template to indent.
-	 * @param {number} indentation The level of indentation (by default 1).
-	 * @returns {string} The new template.
-	 * @since 1.0.3
-	 */
-	public indentTemplate(template: string, indentation: number = 1): string {
-		var newTemplate = "";
-		var lines = this._extractLinesFrom(template);
-		for (var line of lines) {
-			newTemplate += ">".repeat(indentation) + line.trim() + "\n"; // \n to add more lines
-		}
-
-		return newTemplate.trim();
-	}
-
-	/**
-	 * Gets the indentation level of a line.
-	 *
-	 * @param {string} line The line to parse.
-	 * @return {number} The level of indentation.
-	 * @private
-	 */
-	private _level(line: string): number {
-		var level = 0;
-		for (var i = 0; i < line.length; i++) {
-			if (line[i] !== ">") {
-				break;
-			} else {
-				level++;
-			}
-		}
-		return level;
-	}
-
-	/**
-	 * Extracts the different lines of a template in order to analyse them individually.
-	 *
-	 * @param {string} template The template of the HTML elements.
-	 * @return {Array<string>} The lines from a template.
-	 * @private
-	 */
-	private _extractLinesFrom(template: string): string[] {
-		var lines = template.trim().split("\n");
-		for (var i = 0; i < lines.length; i++) {
-			lines[i] = lines[i].trim();
-			if (lines[i].length == 0) {
-				lines.splice(i, 1);
-			}
-		}
-		return lines;
-	}
-
-	/**
-	 * Decodes HTML entities like `&amp;` etc.
-	 *
-	 * @param {string} content The content to decode.
-	 * @return {string} The decoded content.
-	 * @private
-	 * {@link https://stackoverflow.com/questions/7394748/whats-the-right-way-to-decode-a-string-that-has-special-html-entities-in-it/7394787#7394787}
-	 */
-	private _decodeHTMLEntities(content: string): string {
-		var txt = document.createElement("textarea");
-		txt.innerHTML = content;
-		return txt.value;
-	}
-
-	/**
-	 * Gets an event according to its name.
-	 *
-	 * @param name The name of the event we are looking for.
-	 * @return {{name: string, type: string, callback: Function, options: any}} The event we are looking for.
-	 * @private
-	 */
-	private _searchForEvent(name: string): Listener | null {
-		for (var event of this.EVENTS) {
-			if (name === event.name) {
-				return event;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Generates a new HTML element from a line (you must use a specific syntax & order).
-	 *
-	 * @param {string} line The line to parse.
-	 * @return {HTMLElement} The generated HTML element.
-	 * @private
-	 * @throws If there is no tagname.
-	 */
-	private _createElementFromLine(line: string): HTMLElement {
-		// Be careful when you use exec() with the global flag
-		// If you use a global flag, then set the lastIndex property of the regex to 0 (its initial value).
-		// this.REGEX.lastIndex = 0;
-		//
-		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec#finding_successive_matches
-		var matches = this.REGEX.exec(line) || [];
-
-		var tagname: string | null = matches[1] || null;
-		var classes: string[] | null = matches[2] ? (matches[2].split(".") as string[]).filter((v) => v !== "") : null;
-		var id: string | null = matches[3] ? matches[3].replace("#", "") : null;
-		var content: string | null = matches[4] || null;
-		var attributes: string[] | null = matches[5] ? matches[5].split(this.SYMBOL_BETWEEN_ATTRIBUTES) : null;
-		var events: string[] | null = matches[6] ? (matches[6].split(";") as string[]).filter((v) => v !== "") : null;
-
-		if (!tagname) {
-			throw new Error('HTMLBuilder: unable to parse a line: "' + line + '"');
-		}
-
-		var element: HTMLElement = document.createElement(tagname);
-		if (classes) {
-			for (var c of classes) {
-				if (/\d/.test(c[0])) {
-					console.error("HTMLBuilder: invalid syntax for class name '" + c + "'");
-					continue;
-				}
-				element.classList.add(c);
-			}
-		}
-		if (attributes) {
-			for (var attr of attributes) {
-				if (/\d/.test(attr[0])) {
-					console.error("HTMLBuilder: invalid syntax for attribute name '" + attr + "'");
-					continue;
-				}
-
-				attr = attr.trim();
-				if (attr.indexOf("=") !== -1) {
-					var name: string = attr.split("=")[0];
-					var value: string = attr.split("=")[1];
-					element.setAttribute(name, value);
-				} else {
-					element.setAttribute(attr, "");
-				}
-			}
-		}
-
-		if (id) element.id = id;
-		if (content) element.appendChild(document.createTextNode(this._decodeHTMLEntities(content)));
-
-		if (events) {
-			for (var name of events) {
-				if (/\d/.test(name[0])) {
-					console.error("HTMLBuilder: invalid syntax for event name '" + name + "'");
-					continue;
-				}
-
-				var event: Listener | null = this._searchForEvent(name);
-				if (event) {
-					// @ts-ignore
-					element.addEventListener(event.type, event.callback, event.options);
-				}
-			}
-		}
-
-		return element;
-	}
-
-	/**
-	 * Gets the maximum level of indentation.
-	 *
-	 * @param {Array} children The list of children of a main element from a template.
-	 * @return {number} The maximum level of indentation of a list of children.
-	 * @private
-	 */
-	private _maxLevel(children: [HTMLElement, number][]): number {
-		var max: number = children[0][1];
-		for (var child of children) {
-			var level = child[1];
-			if (level > max) {
-				max = level;
-			}
-		}
-		return max;
-	}
-
-	/**
-	 * Gets the index of the deepest element. The deepest element is the last child to have the highest level of indentation.
-	 *
-	 * @param {Array} children The list of children of a main element from a template.
-	 * @return {number} The index of the deepest child.
-	 * @private
-	 */
-	private _getIndexOfDeepestElement(children: [HTMLElement, number][]): number {
-		var max: number = this._maxLevel(children);
-		if (max === 1) {
-			// If all the elements are on the closest possible level (1),
-			// then we want to append the last child of the list.
-			// Remember that we do a prepend() not an append(),
-			// therefore the last one must go first in order to keep the right order
-			return children.length - 1;
-		}
-
-		var lastIndex: number = 1;
-		for (var i = 0; i < children.length; i++) {
-			var level = children[i][1];
-			if (level === max) {
-				lastIndex = i;
-			}
-		}
-		return lastIndex;
-	}
-
-	/**
-	 * Gets the index of the nearest element of the deepest one. This child is the parent element of the deepest one.
-	 *
-	 * @param indexOfDeepest The index of the deepest element.
-	 * @param children The list of children of a main element from a template.
-	 * @return {number} The index of the nearest child.
-	 * @private
-	 */
-	private _getIndexOfNearestParentElementOf(
-		indexOfDeepest: number,
-		children: [HTMLElement, number][]
-	): number | null {
-		var deepest: number = children[indexOfDeepest][1];
-		var lastIndex: number | null = null;
-		for (var i = 0; i < indexOfDeepest; i++) {
-			var level: number = children[i][1];
-			if (level === deepest - 1) {
-				lastIndex = i;
-			}
-		}
-		return lastIndex;
-	}
-
-	/**
-	 * Reproduces a template in full HTML structure and adds it to the parent as a child (there can be several children).
-	 *
-	 * @param {string} template The template of your HTML structure.
-	 * @public
-	 */
-	public generate(template: string): void {
-		if (template.trim().length === 0) return;
-
-		// We read all the lines in order to identify the main HTML elements,
-		// i.e. those without indentation
-
-		var lines: string[] = this._extractLinesFrom(template);
-		var mainLines: [string, number][] = [];
-		var i = 0;
-		var k = 0;
-
-		for (i = 0; i < lines.length; i++) {
-			var line = lines[i];
-			var level = this._level(line);
-			if (level === 0) {
-				mainLines.push([line, i]); // the line & its index among all the lines
-			}
-		}
-
-		// We read the next lines and we create an array [HTMLElement, its level] that we save
-		// in a list of children, for each main element.
-
-		for (i = 0; i < mainLines.length; i++) {
-			var childrenElements: [HTMLElement, number][] = [];
-			var mainLine: string = mainLines[i][0];
-			var mainLevel: number = mainLines[i][1];
-			var nextMainLevel: number = mainLines[i + 1] ? mainLines[i + 1][1] : lines.length;
-			var mainElement: HTMLElement = this._createElementFromLine(mainLine);
-
-			// starts at the position of the main line
-			// ends at the position of the next main line
-			// in order to get only its children
-			for (k = mainLevel + 1; k < nextMainLevel; k++) {
-				var line: string = lines[k];
-				var child: HTMLElement = this._createElementFromLine(line);
-				childrenElements.push([child, this._level(line)]);
-			}
-
-			// We search for the deepest element (i.e. the one with the highest level of indentation)
-			// This deepest has as parent the nearest element which has a level of indentation equal to "child's level - 1"
-			// We call it the "nearest parent element".
-			// Then, because we read the list of children from bottom to top, we prepend() in order to keep the right order.
-			// Indeed, append() would reverse the right order.
-
-			while (childrenElements.length > 0) {
-				var indexOfDeepest: number = this._getIndexOfDeepestElement(childrenElements);
-				var indexOfNearestParent: number | null = this._getIndexOfNearestParentElementOf(
-					indexOfDeepest,
-					childrenElements
-				);
-
-				// Don't forget to specify "!== null" because indexOfNearestParent can be 0 (= false)
-				indexOfNearestParent !== null
-					? childrenElements[indexOfNearestParent][0].prepend(childrenElements[indexOfDeepest][0])
-					: mainElement.prepend(childrenElements[indexOfDeepest][0]);
-
-				childrenElements.splice(indexOfDeepest, 1);
-			}
-
-			this.parent.appendChild(mainElement);
+			return li;
 		}
 	}
 }
