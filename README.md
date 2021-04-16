@@ -44,6 +44,7 @@ var item = {
     shortcut: "Ctrl+C",
     icon: "assets/myicon.svg",
     // or: fontawesome_icon: "fas fa-check", (the className of an icon)
+    // with fontawesome_color: "red", // the color of the icon
     onclick: () => console.log("clicked on item 1"),
 };
 ```
@@ -85,7 +86,7 @@ You can change the font family, the background color etc. of the context menu by
 	--menu-background-color: #fff;
 	--menu-box-shadow: 0 0 6px rgba(204, 204, 204, 0.25);
 	--menu-width: 180px;
-	--menu-font-family: Roboto, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
+	--menu-title-width: 100px;
 	--menu-font-color: #404040;
 	--menu-font-size: 0.9em;
 	--menu-hover-item-color: #b4e6ff;

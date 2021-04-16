@@ -3,6 +3,7 @@ interface ContextTemplate {
 	shortcut?: string;
 	icon?: string;
 	fontawesome_icon?:string;
+	fontawesome_color?:string;
 	onclick?: () => void;
 	separator?: boolean;
 	children?: ContextTemplate[];
@@ -29,7 +30,7 @@ class ContextMenu {
 	/**
 	 * @constructs ContextMenu
 	 * @param {MouseEvent} event The mouse event.
-	 * @param {Array<{title?:string,shortcut?:string,icon?:string,onclick?:Function,separator?:boolean,children?:Array}>} items The items to be displayed.
+	 * @param {Array<{title?:string,shortcut?:string,icon?:string,fontawesome_icon?:string,fontawesome_color?:string,onclick?:Function,separator?:boolean,children?:Array}>} items The items to be displayed.
 	 */
 	public constructor(event: MouseEvent, items: ContextTemplate[]) {
 		event.stopPropagation();
@@ -137,7 +138,7 @@ class ContextMenu {
 	/**
 	 * Builds the menu.
 	 * @param {MouseEvent} event The mouse event.
-	 * @param {{title:string|undefined,shortcut:string|undefined,icon:string|undefined,onclick:Function|undefined,separator:boolean|undefined,children:array|undefined}} items The items to be displayed.
+	 * @param {{title?:string,shortcut?:string,icon?:string,fontawesome_icon?:string,fontawesome_color?:string,onclick?:Function,separator?:boolean,children?:Array}} items The items to be displayed.
 	 * @private
 	 */
 	private _build(event: MouseEvent, items: ContextTemplate[]): void {
@@ -192,13 +193,14 @@ class ContextMenu {
 
 	/**
 	 * Builds an item.
-	 * @param {{title:string|undefined,shortcut:string|undefined,icon:string|undefined,onclick:Function|undefined,separator:boolean|undefined,children:array|undefined}} item An item to be displayed in the menu.
+	 * @param {{title?:string,shortcut?:string,icon?:string,fontawesome_icon?:string,fontawesome_color?:string,onclick?:Function,separator?:boolean,children?:Array}} item An item to be displayed in the menu.
 	 * @returns {HTMLLIElement} The template of an item.
 	 * @private
 	 */
 	private _buildItem(item: ContextTemplate): HTMLLIElement {
 		const icon = item.icon ? item.icon : null;
 		const fontawesome_icon = item.fontawesome_icon ? item.fontawesome_icon : null;
+		const fontawesome_color = item.fontawesome_color ? item.fontawesome_color : null;
 		const title = item.title ? item.title : "";
 		const shortcut = item.shortcut ? item.shortcut : null;
 		const onclick = item.onclick ? item.onclick : null;
@@ -240,6 +242,7 @@ class ContextMenu {
 			}
 
 			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
+			if (el_fontawesome_icon && fontawesome_color) el_fontawesome_icon.style.color = fontawesome_color;
 			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
 			el_containertitle.appendChild(el_title);
 			el_contextmenuitem.appendChild(el_containertitle);
@@ -269,6 +272,7 @@ class ContextMenu {
 			const el_shortcut = shortcut ? this._createEl("span", { className: "contextmenu-shortcut", textContent: shortcut }) : null;
 			
 			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
+			if (el_fontawesome_icon && fontawesome_color) el_fontawesome_icon.style.color = fontawesome_color;
 			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
 			el_containertitle.appendChild(el_title);
 			el_contextmenuitem.appendChild(el_containertitle);
