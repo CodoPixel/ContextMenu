@@ -173,7 +173,16 @@ class ContextMenu {
 				
 			const all_items = this.menu.querySelectorAll("button.contextmenu-item");
 			if (all_items && all_items[0]) (all_items[0] as HTMLElement).focus();
-		}		
+		}
+
+		window.addEventListener("keyup", (e: KeyboardEvent) => {
+			if (e.key === "Tab" || e.keyCode === 9) {
+				const target = e.target as HTMLElement;
+				if (!target.classList.contains("contextmenu-item")) {
+					this.closeCurrentMenu();
+				}
+			}
+		});
 	}
 
 	/**

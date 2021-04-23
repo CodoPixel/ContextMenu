@@ -1,3 +1,7 @@
+## [2.1.1] - April 24, 2021
+
++ Closes the panel when the focus is outside of the panel.
+
 ## [2.1.0] - April 23, 2021
 
 + Better digital accessibility

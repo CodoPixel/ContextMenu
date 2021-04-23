@@ -145,6 +145,14 @@ class ContextMenu {
             if (all_items && all_items[0])
                 all_items[0].focus();
         }
+        window.addEventListener("keyup", (e) => {
+            if (e.key === "Tab" || e.keyCode === 9) {
+                const target = e.target;
+                if (!target.classList.contains("contextmenu-item")) {
+                    this.closeCurrentMenu();
+                }
+            }
+        });
     }
     /**
      * Opens the children list of an item.
