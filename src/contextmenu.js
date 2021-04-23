@@ -141,6 +141,9 @@ class ContextMenu {
                 event.clientY + this.menu.offsetHeight >= window.innerHeight
                     ? event.clientY - this.menu.offsetHeight + "px"
                     : event.clientY + "px";
+            const all_items = this.menu.querySelectorAll("button.contextmenu-item");
+            if (all_items && all_items[0])
+                all_items[0].focus();
         }
     }
     /**

@@ -111,6 +111,10 @@
 	background-color: var(--menu-hover-item-color, #b4e6ff);
 }
 
+.contextmenu ul li .contextmenu-item:focus {
+	outline: auto;
+}
+
 /* we want a different color when it comes to the children we are hovering over, a more darken one,
 to improve differentiation and readability for the user */
 .contextmenu .contextmenu-container-children ul li .contextmenu-item:hover {
