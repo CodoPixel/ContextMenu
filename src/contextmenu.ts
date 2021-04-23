@@ -178,7 +178,7 @@ class ContextMenu {
 	 * @param {Event} e The click event.
 	 * @private
 	 */
-	private _openChildren(e : Event): void {
+	private _openChildren(e: Event): void {
 		const target = e.target as HTMLElement;
 		const li = target.parentElement;
 		if (li) {
@@ -198,38 +198,36 @@ class ContextMenu {
 	 * @private
 	 */
 	private _buildItem(item: ContextTemplate): HTMLLIElement {
-		const icon = item.icon ? item.icon : null;
-		const fontawesome_icon = item.fontawesome_icon ? item.fontawesome_icon : null;
-		const fontawesome_color = item.fontawesome_color ? item.fontawesome_color : null;
-		const title = item.title ? item.title : "";
-		const shortcut = item.shortcut ? item.shortcut : null;
-		const onclick = item.onclick ? item.onclick : null;
-		const children = item.children ? item.children : null;
-
 		const li = this._createEl("li") as HTMLLIElement;
+		const el_contextmenuitem = this._createEl("button", { className: "contextmenu-item" });
+		const el_containertitle = this._createEl("div", { className: "contextmenu-container-title" });
+		const el_icon = item.icon ? this._createEl("img", { attributes: [["src", item.icon]] }) : null;
+		const el_fontawesome_icon = item.fontawesome_icon ? this._createEl("i", { className: item.fontawesome_icon }) : null;
+		const el_title = this._createEl("span", { className: "contextmenu-title", textContent: item.title });
 
-		if (!children && onclick) {
-			li.addEventListener("click", () => {
-				onclick();
+		if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
+		if (el_fontawesome_icon && item.fontawesome_color) el_fontawesome_icon.style.color = item.fontawesome_color;
+		if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
+
+		if (item.title) el_contextmenuitem.setAttribute("aria-label", item.title);
+
+		if (!item.children && item.onclick) {
+			el_contextmenuitem.addEventListener("click", () => {
+				if (item.onclick) item.onclick();
 				this.closeCurrentMenu();
 			});
-		} else if (children) {
-			li.addEventListener("click", (e: MouseEvent) => {
+		} else if (item.children) {
+			el_contextmenuitem.addEventListener("click", (e: MouseEvent) => {
 				this._openChildren(e);
 			});
 		}
 
-		if (children) {
-			const el_contextmenuitem = this._createEl("div", { className: "contextmenu-item" });
-			const el_containertitle = this._createEl("div", { className: "contextmenu-container-title" });
-			const el_icon = icon ? this._createEl("img", { attributes: [["src", icon]] }) : null;
-			const el_fontawesome_icon = fontawesome_icon ? this._createEl("i", { className: fontawesome_icon }) : null;
-			const el_title = this._createEl("span", { className: "contextmenu-title", textContent: title });
+		if (item.children) {
 			const el_arrow = this._createEl("span", { className: "contextmenu-arrow", textContent: this.arrow_down });
 			const el_containerchildren = this._createEl("div", { className: "contextmenu-container-children contextmenu-hidden" });
 			const el_ul = this._createEl("ul");
 
-			for (var child of children) {
+			for (var child of item.children) {
 				child.children = undefined;
 
  				if (child.separator) {
@@ -241,9 +239,6 @@ class ContextMenu {
 				}
 			}
 
-			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
-			if (el_fontawesome_icon && fontawesome_color) el_fontawesome_icon.style.color = fontawesome_color;
-			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
 			el_containertitle.appendChild(el_title);
 			el_contextmenuitem.appendChild(el_containertitle);
 			el_contextmenuitem.appendChild(el_arrow);
@@ -261,19 +256,9 @@ class ContextMenu {
 				>div.contextmenu-container-children.contextmenu-hidden
 					>>ul
 			*/
-
-			return li;
 		} else {
-			const el_contextmenuitem = this._createEl("div", { className: "contextmenu-item" });
-			const el_containertitle = this._createEl("div", { className: "contextmenu-container-title" });
-			const el_icon = icon ? this._createEl("img", { attributes: [["src", icon]] }) : null;
-			const el_fontawesome_icon = fontawesome_icon ? this._createEl("i", { className: fontawesome_icon }) : null;
-			const el_title = this._createEl("span", { className: "contextmenu-title", textContent: title });
-			const el_shortcut = shortcut ? this._createEl("span", { className: "contextmenu-shortcut", textContent: shortcut }) : null;
+			const el_shortcut = item.shortcut ? this._createEl("span", { className: "contextmenu-shortcut", textContent: item.shortcut }) : null;
 			
-			if ((el_icon && !el_fontawesome_icon) || (el_icon && el_fontawesome_icon)) el_containertitle.appendChild(el_icon);
-			if (el_fontawesome_icon && fontawesome_color) el_fontawesome_icon.style.color = fontawesome_color;
-			if (!el_icon && el_fontawesome_icon) el_containertitle.appendChild(el_fontawesome_icon);
 			el_containertitle.appendChild(el_title);
 			el_contextmenuitem.appendChild(el_containertitle);
 			if (el_shortcut) el_contextmenuitem.appendChild(el_shortcut);
@@ -287,8 +272,8 @@ class ContextMenu {
 						>>>span.contextmenu-title(${title})
 					${shortcut ? ">>span.contextmenu-shortcut(" + shortcut + ")" : ""}\n
 			*/
-
-			return li;
 		}
+
+		return li;
 	}
 }

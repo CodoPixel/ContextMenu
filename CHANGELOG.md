@@ -1,3 +1,7 @@
+## [2.1.0] - April 23, 2021
+
++ Better digital accessibility
+
 ## [2.0.1] - April 16, 2021
 
 + Added a new option "fontawesome_color"

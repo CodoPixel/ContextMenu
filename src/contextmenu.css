@@ -79,6 +79,7 @@
 
 /* if the title is too long, we make it shorter */
 .contextmenu ul li .contextmenu-title {
+	display: flex;
 	width: var(--menu-title-width, 100px);
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -91,18 +92,22 @@
 	flex-direction: column;
 	width: 100%;
 	font-size: var(--menu-font-size, 0.9em);
-	cursor: default;
 }
 
 /* .contextmenu-item contains the icon, the title & the shortcut (or arrow) */
 .contextmenu ul li .contextmenu-item {
+	margin: 0;
+	border: none;
+	background-color: transparent;
+	cursor: pointer;
 	display: flex;
 	justify-content: space-between;
 	padding: 5px 10px;
 }
 
 /* nice bluish color when we hover an item, actually it is not the element itself, but rather its content */
-.contextmenu ul li .contextmenu-item:hover {
+.contextmenu ul li .contextmenu-item:hover,
+.contextmenu ul li .contextmenu-item:focus {
 	background-color: var(--menu-hover-item-color, #b4e6ff);
 }
 
