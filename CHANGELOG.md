@@ -1,3 +1,7 @@
+## [2.2.0] - April 24, 2021
+
++ In order to follow the digital accessibility recommendations, the context menu can now be opened with the Enter key (combined with a left click event).
+
 ## [2.1.1] - April 24, 2021
 
 + Closes the panel when the focus is outside of the panel.

@@ -169,8 +169,7 @@
          *
          */
 
-        const button = document.querySelector("#btn");
-        button.addEventListener('contextmenu', function (e) {
+        function drawContextMenu(e) {
             e.preventDefault(); // this avoids the default behavior of the browser
             let contextMenu = new ContextMenu(e, [
                 { title: 'Accept', shortcut: 'Ctrl+C', fontawesome_icon: "fas fa-check", onclick: () => console.log("accepted") },
@@ -184,7 +183,11 @@
                 { separator: true },
                 { title: 'Cancel', fontawesome_icon: 'fas fa-power-off', fontawesome_color: '#c00', onclick: () => console.log("cancelled") }
             ]);
-        });
+        }
+
+        const button = document.querySelector("#btn");
+        button.addEventListener('contextmenu', drawContextMenu);
+        button.addEventListener('click', drawContextMenu);
     </script>
 </body>
 </html>

@@ -161,15 +161,32 @@ class ContextMenu {
 
 		this.menu = document.querySelector("#" + this.menuid);
 		if (this.menu) {
-			this.menu.style.left =
-				event.clientX + this.menu.offsetWidth >= window.innerWidth
-					? event.clientX - this.menu.offsetWidth + "px"
-					: event.clientX + "px";
 
-			this.menu.style.top =
-				event.clientY + this.menu.offsetHeight >= window.innerHeight
-					? event.clientY - this.menu.offsetHeight + "px"
-					: event.clientY + "px";
+			// button Enter
+			if (event.clientX === 0 && event.clientY === 0) {
+				const target = event.target as HTMLElement;
+				const borders = target.getBoundingClientRect();
+
+				this.menu.style.left =
+					borders.left + borders.width + this.menu.offsetWidth >= window.innerWidth
+						? borders.left + borders.width - this.menu.offsetWidth + "px"
+						: borders.left + borders.width + "px";
+				
+				this.menu.style.top =
+					borders.y + this.menu.offsetHeight >= window.innerHeight
+						? borders.y - this.menu.offsetHeight + "px"
+						: borders.y + "px";
+			} else {
+				this.menu.style.left =
+					event.clientX + this.menu.offsetWidth >= window.innerWidth
+						? event.clientX - this.menu.offsetWidth + "px"
+						: event.clientX + "px";
+
+				this.menu.style.top =
+					event.clientY + this.menu.offsetHeight >= window.innerHeight
+						? event.clientY - this.menu.offsetHeight + "px"
+						: event.clientY + "px";
+			}
 				
 			const all_items = this.menu.querySelectorAll("button.contextmenu-item");
 			if (all_items && all_items[0]) (all_items[0] as HTMLElement).focus();
